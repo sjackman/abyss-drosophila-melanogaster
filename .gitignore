@@ -1,0 +1,32 @@
+*.csv
+*.fa
+*.fa.fai
+*.fq.gz
+*.html
+*.log
+*.md
+*.sam
+*.sra
+*.time
+*.tsv
+*.txt
+
+# ABySS
+*-stats
+*-stats.tab
+*.dist
+*.dot
+*.dot1
+*.hist
+*.path
+*.path.dot
+*.path1
+*.path2
+*.path3
+
+# BWA
+*.fa.amb
+*.fa.ann
+*.fa.bwt
+*.fa.pac
+*.fa.sa
