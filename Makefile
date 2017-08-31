@@ -29,6 +29,8 @@ sra: SRR3663859.sra SRR3663860.sra
 
 reads: dmelanogaster.pe.fq.gz dmelanogaster.mp.fq.gz
 
+fastqc: dmelanogaster.pe.fastqc dmelanogaster.mp.fastqc
+
 k32: abyss/k32/dmelanogaster-scaffolds.fac.tsv \
 	abyss/k32/dmelanogaster-scaffolds.bwa.samtobreak.tsv
 
@@ -79,6 +81,14 @@ dmelanogaster.pe.fq.gz: SRR3663859.fq.gz
 # Symlink the mate-pair data.
 dmelanogaster.mp.fq.gz: SRR3663860.fq.gz
 	ln -sf $< $@
+
+# FastQC
+
+# Inspect the quality of the reads using FastQC.
+%.fastqc.html: %.fq.gz
+	fastqc -t $t $<
+	mv $*_fastqc.html $*.fastqc.html
+	mv $*_fastqc.zip $*.fastqc.zip
 
 # samtools
 
