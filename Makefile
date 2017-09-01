@@ -31,32 +31,19 @@ reads: dmelanogaster.pe.fq.gz dmelanogaster.mp.fq.gz
 
 fastqc: dmelanogaster.pe.fastqc dmelanogaster.mp.fastqc
 
-k32: abyss/k32/dmelanogaster-scaffolds.fac.tsv \
-	abyss/k32/dmelanogaster-scaffolds.bwa.samtobreak.tsv
-
-k48: abyss/k48/dmelanogaster-scaffolds.fac.tsv \
-	abyss/k48/dmelanogaster-scaffolds.bwa.samtobreak.tsv
-
-k64: abyss/k64/dmelanogaster-scaffolds.fac.tsv \
-	abyss/k64/dmelanogaster-scaffolds.bwa.samtobreak.tsv
-
-k80: abyss/k80/dmelanogaster-scaffolds.fac.tsv \
-	abyss/k80/dmelanogaster-scaffolds.bwa.samtobreak.tsv
-
-k96: abyss/k96/dmelanogaster-scaffolds.fac.tsv \
-	abyss/k96/dmelanogaster-scaffolds.bwa.samtobreak.tsv
+k32 k48 k64 k80 k96: k%: \
+	abyss/k%/dmelanogaster-scaffolds.fac.tsv \
+	abyss/k%/dmelanogaster-scaffolds.bwa.samtobreak.tsv
 
 nxtrim: dmelanogaster.mp.nxtrim.fq.gz
 
-nxtrim_k32: nxtrim/abyss/k32/dmelanogaster-scaffolds.fac.tsv \
-	nxtrim/abyss/k32/dmelanogaster-scaffolds.bwa.samtobreak.tsv
+nxtrim-k32 nxtrim-k48 nxtrim-k64 nxtrim-k80 nxtrim-k96: nxtrim-k%: \
+	nxtrim/abyss/k%/dmelanogaster-scaffolds.fac.tsv \
+	nxtrim/abyss/k%/dmelanogaster-scaffolds.bwa.samtobreak.tsv
 
 ifndef k
-abyss/k%/dmelanogaster-scaffolds.fac.tsv:
+abyss/k%/dmelanogaster-scaffolds.fa:
 	mkdir -p $(@D)
-	$(time) $(MAKE) k=$* $@ 2>&1 | tee $@.log
-
-abyss/k%/dmelanogaster-scaffolds.bwa.samtobreak.tsv:
 	$(time) $(MAKE) k=$* $@ 2>&1 | tee $@.log
 
 nxtrim/abyss/k%/dmelanogaster-scaffolds.fa:
