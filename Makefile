@@ -25,7 +25,8 @@ export TIMEFMT=time user=%U system=%S elapsed=%E cpu=%P memory=%M job=%J
 
 all: reads nxtrim \
 	k32 k48 k64 k80 k96 \
-	nxtrim-k32 nxtrim-k48 nxtrim-k64 nxtrim-k80 nxtrim-k96
+	nxtrim-k32 nxtrim-k48 nxtrim-k64 nxtrim-k80 nxtrim-k96 \
+	notebook
 
 sra: SRR3663859.sra SRR3663860.sra
 
@@ -60,6 +61,8 @@ fastqc: \
 	dmelanogaster.pe.fastqc.html \
 	dmelanogaster.mp.fastqc.html \
 	dmelanogaster.mp.nxtrim.fastqc.html
+
+notebook: dmelanogaster.samtobreak.nb.html
 
 ifndef k
 abyss/k%/dmelanogaster.scaffolds.fa:
