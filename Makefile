@@ -46,12 +46,21 @@ k80: abyss/k80/dmelanogaster-scaffolds.fac.tsv \
 k96: abyss/k96/dmelanogaster-scaffolds.fac.tsv \
 	abyss/k96/dmelanogaster-scaffolds.bwa.samtobreak.tsv
 
+nxtrim: dmelanogaster.mp.nxtrim.fq.gz
+
+nxtrim_k32: nxtrim/abyss/k32/dmelanogaster-scaffolds.fac.tsv \
+	nxtrim/abyss/k32/dmelanogaster-scaffolds.bwa.samtobreak.tsv
+
 ifndef k
 abyss/k%/dmelanogaster-scaffolds.fac.tsv:
 	mkdir -p $(@D)
 	$(time) $(MAKE) k=$* $@ 2>&1 | tee $@.log
 
 abyss/k%/dmelanogaster-scaffolds.bwa.samtobreak.tsv:
+	$(time) $(MAKE) k=$* $@ 2>&1 | tee $@.log
+
+nxtrim/abyss/k%/dmelanogaster-scaffolds.fa:
+	mkdir -p $(@D)
 	$(time) $(MAKE) k=$* $@ 2>&1 | tee $@.log
 endif
 
@@ -90,6 +99,22 @@ dmelanogaster.mp.fq.gz: SRR3663860.fq.gz
 	mv $*_fastqc.html $*.fastqc.html
 	mv $*_fastqc.zip $*.fastqc.zip
 
+# NxTrim
+
+# Trim mate-pair reads using NxTrim.
+%.nxtrim.fq.gz: %.fq.gz
+	nxtrim --stdout --justmp --rf -1 <(seqtk seq -1 $<) -2 <(seqtk seq -2 $<) | $(gzip) >$@
+
+# Symlink the paired-end reads.
+nxtrim/%.pe.fq.gz: %.pe.fq.gz
+	mkdir -p $(@D)
+	ln -sf ../$< $@
+
+# Symlink the trimmed mate-pair reads.
+nxtrim/%.mp.fq.gz: %.mp.nxtrim.fq.gz
+	mkdir -p $(@D)
+	ln -sf ../$< $@
+
 # samtools
 
 # Index a FASTA file.
@@ -121,6 +146,12 @@ abyss/k$k/%-scaffolds.fa: %.pe.fq.gz %.mp.fq.gz
 	test ! -e $@
 	mkdir -p $(@D)
 	$(time) abyss-pe -C $(@D) mpirun=mpirun np=$t G=$G v=-v name=$* k=$k lib=pe1 mp=mp1 pe1=../../$*.pe.fq.gz mp1=../../$*.mp.fq.gz 2>&1 | tee $@.log
+
+# Assemble paired-end and trimmed mate-pair reads using ABySS.
+%/abyss/k$k/dmelanogaster-scaffolds.fa: %/dmelanogaster.pe.fq.gz %/dmelanogaster.mp.fq.gz
+	test ! -e $@
+	mkdir -p $(@D)
+	$(time) abyss-pe -C $(@D) mpirun=mpirun np=$t G=$G v=-v name=dmelanogaster k=$k lib=pe1 mp=mp1 pe1=../../dmelanogaster.pe.fq.gz mp1=../../dmelanogaster.mp.fq.gz 2>&1 | tee $@.log
 
 # Calculate assembly contiguity stats using abyss-fac.
 %.fac.tsv: %.fa
