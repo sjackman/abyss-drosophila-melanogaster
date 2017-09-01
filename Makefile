@@ -125,8 +125,8 @@ nxtrim/%.mp.fq.gz: %.mp.nxtrim.fq.gz
 	bwa index $<
 
 # Align sequences to the target genome.
-%.bwa.sam: %.fa $(ref).fa.bwt
-	bwa mem -t$t -xintractg $(ref).fa $< >$@
+%.bwa.sam.gz: %.fa $(ref).fa.bwt
+	bwa mem -t$t -xintractg $(ref).fa $< | $(gzip) >$@
 
 # seqtk
 
@@ -157,9 +157,14 @@ abyss/k$k/%-scaffolds.fa: %.pe.fq.gz %.mp.fq.gz
 	abyss-fac -G$G -t1000 $< >$@
 
 # Calculate assembly contiguity and correctness metrics with abyss-samtobreak.
-%.samtobreak.txt: %.sam
-	(echo '==> $< <=='; abyss-samtobreak -G$G -l1000 $<) >$@
+%.samtobreak.txt: %.sam.gz
+	(echo '==> $< <=='; gunzip -c $< | abyss-samtobreak -G$G -l1000) >$@
 
 # Convert samtobreak.txt to TSV.
 %.samtobreak.tsv: %.samtobreak.txt
-	abyss-samtobreak-to-tsv $< >$@
+	( \
+		printf "File\tContig_NA50\tContig_breakpoints\tScaffold_NA50\tScaffold_breakpoints\n"; \
+		egrep '==>|Mapped NG50|Number of Q10 break points longer than 500 bp|Aligned scaffold NG50|Number of Q10 scaffold breakpoints longer than 500 bp' $< \
+			| sed 's/^==> //;s/ <==$$//;s/^.*: //' \
+			| paste -d'\t' - - - - - \
+	) | mlr --tsvlite put '$$Total_breakpoints = $$Contig_breakpoints + $$Scaffold_breakpoints' >$@
