@@ -158,7 +158,7 @@ nxtrim/%.mp.fq.gz: %.mp.nxtrim.fq.gz
 abyss/k$k/%-scaffolds.fa: %.pe.fq.gz %.mp.fq.gz
 	test ! -e $@
 	mkdir -p $(@D)
-	$(time) abyss-pe -C $(@D) mpirun=mpirun np=$t G=$G v=-v name=$* k=$k lib=pe1 mp=mp1 pe1=../../$*.pe.fq.gz mp1=../../$*.mp.fq.gz 2>&1 | tee $@.log
+	$(time) abyss-pe -C $(@D) mpirun=mpirun np=$t G=$G v=-v name=$* k=$k lib=pe1 mp=mp1 mp1_de=--rf pe1=../../$*.pe.fq.gz mp1=../../$*.mp.fq.gz 2>&1 | tee $@.log
 
 # Assemble paired-end and trimmed mate-pair reads using ABySS.
 %/abyss/k$k/dmelanogaster-scaffolds.fa: %/dmelanogaster.pe.fq.gz %/dmelanogaster.mp.fq.gz
