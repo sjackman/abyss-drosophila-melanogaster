@@ -1,4 +1,4 @@
-# Assemble D. melanogaster with ABySS
+# Assemble *Drosophila melanogaster* with ABySS
 
 # Data
 

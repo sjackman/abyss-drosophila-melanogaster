@@ -1,5 +1,5 @@
 #!/usr/bin/make -Rrf
-# Assemble D. melanogaster using ABySS
+# Assemble Drosophila melanogaster using ABySS
 
 .DELETE_ON_ERROR:
 .SECONDARY:
