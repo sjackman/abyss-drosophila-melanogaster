@@ -143,11 +143,11 @@ nxtrim/%.mp.fq.gz: %.mp.nxtrim.fq.gz
 	samtools faidx $<
 
 # Sort a SAM file and produce a sorted BAM file.
-%.sort.bam: %.sam
+%.sort.bam: %.sam.gz
 	samtools sort -@$t -o $@ $<
 
 # Index a BAM file.
-%.bam.bai: %.bam
+%.sort.bam.bai: %.sort.bam
 	samtools index $<
 
 # BWA
