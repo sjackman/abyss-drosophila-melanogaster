@@ -1,0 +1,62 @@
+---
+title: Plot assembly metrics
+author: Shaun Jackman
+output:
+  html_notebook:
+    code_folding: hide
+  html_document:
+    keep_md: true
+params:
+  input_tsv:
+    label: "Input TSV file of assembly metrics"
+    value: "dmelanogaster.samtobreak.tsv"
+    input: text
+---
+
+```{r setup, message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(ggrepel)
+library(knitr)
+library(readr)
+library(scales)
+library(tidyr)
+
+knit_print.data.frame <- function(x, ...) kable(x) %>% paste(collapse = "\n") %>% asis_output
+input_tsv <- params$input_tsv
+```
+
+# Read data
+```{r read-data, message=FALSE}
+metrics <- read_tsv(input_tsv) %>%
+	mutate(Name = dirname(File))
+```
+
+# Scaffold NG50 and NGA50 vs Breakpoints
+```{r Scaffold-NGA50-vs-breakpoints}
+ggplot(metrics) +
+	aes(label = Name, x = Total_breakpoints) +
+	geom_errorbar(aes(ymin = Scaffold_NGA50, ymax = Scaffold_NG50), width = 50) +
+	geom_text_repel(aes(y = Scaffold_NG50), nudge_x = 500, segment.color = "#cccccc") +
+	scale_x_continuous(name = "Breakpoints", labels = comma) +
+	scale_y_continuous(name = "Scaffold NG50 and NGA50", labels = unit_format(unit = "kbp", scale = 1e-3)) +
+	expand_limits(x = 0, y = 0) +
+	theme_grey(24)
+```
+
+# Contig NGA50 vs breakpoints
+```{r Contig-NGA50-vs-breakpoints}
+ggplot(metrics) +
+	aes(label = Name, x = Contig_breakpoints, y = Contig_NGA50) +
+	geom_point() +
+	geom_text_repel(nudge_x = -100, segment.color = "#cccccc") +
+	scale_x_continuous(name = "Contig breakpoints", labels = comma) +
+	scale_y_continuous(name = "Contig NGA50", labels = unit_format(unit = "kbp", scale = 1e-3)) +
+	expand_limits(x = 0, y = 0) +
+	theme_grey(24)
+```
+
+# Table of assembly metrics
+```{r assembly-metrics-table}
+metrics %>% select(Name, everything(), -File)
+```
