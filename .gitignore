@@ -10,6 +10,7 @@
 *.time
 *.tsv
 *.txt
+*.zip
 
 # ABySS
 *-stats
