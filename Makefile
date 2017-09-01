@@ -23,27 +23,34 @@ export SHELL=zsh -opipefail
 export REPORTTIME=1
 export TIMEFMT=time user=%U system=%S elapsed=%E cpu=%P memory=%M job=%J
 
+# Run the entire analysis.
 all: reads nxtrim \
 	k32 k48 k64 k80 k96 \
 	nxtrim-k32 nxtrim-k48 nxtrim-k64 nxtrim-k80 nxtrim-k96 \
 	notebook
 
+# Download the data from the SRA.
 sra: SRR3663859.sra SRR3663860.sra
 
+# Convert the reads to FASTQ format.
 reads: dmelanogaster.pe.fq.gz dmelanogaster.mp.fq.gz
 
+# Assemble the reads with ABySS, map to the reference, and calculate assembly metrics.
 k32 k48 k64 k80 k96: k%: \
 	abyss/k%/dmelanogaster.scaffolds.fac.tsv \
 	abyss/k%/dmelanogaster.scaftigs.fac.tsv \
 	abyss/k%/dmelanogaster.scaftigs.bwa.samtobreak.tsv
 
+# Trim the reads using NxTrim.
 nxtrim: dmelanogaster.mp.nxtrim.fq.gz
 
+# Assemble the trimmed reads with ABySS, map to the referenc,e and calculate assembly metrics.
 nxtrim-k32 nxtrim-k48 nxtrim-k64 nxtrim-k80 nxtrim-k96: nxtrim-k%: \
 	nxtrim/abyss/k%/dmelanogaster.scaffolds.fac.tsv \
 	nxtrim/abyss/k%/dmelanogaster.scaftigs.fac.tsv \
 	nxtrim/abyss/k%/dmelanogaster.scaftigs.bwa.samtobreak.tsv
 
+# Aggregate the assembly metrics of all the assemblies.
 %.samtobreak.tsv: \
 		abyss/k32/%.scaftigs.bwa.samtobreak.tsv \
 		abyss/k48/%.scaftigs.bwa.samtobreak.tsv \
@@ -57,18 +64,22 @@ nxtrim-k32 nxtrim-k48 nxtrim-k64 nxtrim-k80 nxtrim-k96: nxtrim-k%: \
 		nxtrim/abyss/k96/%.scaftigs.bwa.samtobreak.tsv
 	mlr --tsvlite cat $^ >$@
 
+# Inspect the quality of the reads using FastQC.
 fastqc: \
 	dmelanogaster.pe.fastqc.html \
 	dmelanogaster.mp.fastqc.html \
 	dmelanogaster.mp.nxtrim.fastqc.html
 
+# Generate a report of assembly metrics.
 notebook: dmelanogaster.samtobreak.nb.html
 
 ifndef k
+# Assemble the reads with ABySS.
 abyss/k%/dmelanogaster.scaffolds.fa:
 	mkdir -p $(@D)
 	$(time) $(MAKE) k=$* $@ 2>&1 | tee $@.log
 
+# Assemble the trimmed reads with ABySS.
 nxtrim/abyss/k%/dmelanogaster.scaffolds.fa:
 	mkdir -p $(@D)
 	$(time) $(MAKE) k=$* $@ 2>&1 | tee $@.log
