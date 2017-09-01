@@ -32,21 +32,23 @@ reads: dmelanogaster.pe.fq.gz dmelanogaster.mp.fq.gz
 fastqc: dmelanogaster.pe.fastqc dmelanogaster.mp.fastqc
 
 k32 k48 k64 k80 k96: k%: \
-	abyss/k%/dmelanogaster-scaffolds.fac.tsv \
-	abyss/k%/dmelanogaster-scaffolds.bwa.samtobreak.tsv
+	abyss/k%/dmelanogaster.scaffolds.fac.tsv \
+	abyss/k%/dmelanogaster.scaftigs.fac.tsv \
+	abyss/k%/dmelanogaster.scaftigs.bwa.samtobreak.tsv
 
 nxtrim: dmelanogaster.mp.nxtrim.fq.gz
 
 nxtrim-k32 nxtrim-k48 nxtrim-k64 nxtrim-k80 nxtrim-k96: nxtrim-k%: \
-	nxtrim/abyss/k%/dmelanogaster-scaffolds.fac.tsv \
-	nxtrim/abyss/k%/dmelanogaster-scaffolds.bwa.samtobreak.tsv
+	nxtrim/abyss/k%/dmelanogaster.scaffolds.fac.tsv \
+	nxtrim/abyss/k%/dmelanogaster.scaftigs.fac.tsv \
+	nxtrim/abyss/k%/dmelanogaster.scaftigs.bwa.samtobreak.tsv
 
 ifndef k
-abyss/k%/dmelanogaster-scaffolds.fa:
+abyss/k%/dmelanogaster.scaffolds.fa:
 	mkdir -p $(@D)
 	$(time) $(MAKE) k=$* $@ 2>&1 | tee $@.log
 
-nxtrim/abyss/k%/dmelanogaster-scaffolds.fa:
+nxtrim/abyss/k%/dmelanogaster.scaffolds.fa:
 	mkdir -p $(@D)
 	$(time) $(MAKE) k=$* $@ 2>&1 | tee $@.log
 endif
@@ -126,6 +128,12 @@ nxtrim/%.mp.fq.gz: %.mp.nxtrim.fq.gz
 %.bwa.sam: %.fa $(ref).fa.bwt
 	bwa mem -t$t -xintractg $(ref).fa $< >$@
 
+# seqtk
+
+# Break scaffolds into scaftigs using seqtk.
+%.scaftigs.fa: %.scaffolds.fa
+	seqtk cutN -n1 $< | seqtk seq >$@
+
 # ABySS
 
 # Assemble paired-end and mate-pair reads using ABySS.
@@ -139,6 +147,10 @@ abyss/k$k/%-scaffolds.fa: %.pe.fq.gz %.mp.fq.gz
 	test ! -e $@
 	mkdir -p $(@D)
 	$(time) abyss-pe -C $(@D) mpirun=mpirun np=$t G=$G v=-v name=dmelanogaster k=$k lib=pe1 mp=mp1 pe1=../../dmelanogaster.pe.fq.gz mp1=../../dmelanogaster.mp.fq.gz 2>&1 | tee $@.log
+
+# Symlink .scaffolds.fa
+%.scaffolds.fa: %-scaffolds.fa
+	ln -sf $(<F) $@
 
 # Calculate assembly contiguity stats using abyss-fac.
 %.fac.tsv: %.fa
