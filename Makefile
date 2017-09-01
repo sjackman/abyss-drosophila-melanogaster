@@ -23,13 +23,13 @@ export SHELL=zsh -opipefail
 export REPORTTIME=1
 export TIMEFMT=time user=%U system=%S elapsed=%E cpu=%P memory=%M job=%J
 
-all: reads k32 k48 k64 k80 k96
+all: reads nxtrim \
+	k32 k48 k64 k80 k96 \
+	nxtrim-k32 nxtrim-k48 nxtrim-k64 nxtrim-k80 nxtrim-k96
 
 sra: SRR3663859.sra SRR3663860.sra
 
 reads: dmelanogaster.pe.fq.gz dmelanogaster.mp.fq.gz
-
-fastqc: dmelanogaster.pe.fastqc dmelanogaster.mp.fastqc
 
 k32 k48 k64 k80 k96: k%: \
 	abyss/k%/dmelanogaster.scaffolds.fac.tsv \
@@ -42,6 +42,24 @@ nxtrim-k32 nxtrim-k48 nxtrim-k64 nxtrim-k80 nxtrim-k96: nxtrim-k%: \
 	nxtrim/abyss/k%/dmelanogaster.scaffolds.fac.tsv \
 	nxtrim/abyss/k%/dmelanogaster.scaftigs.fac.tsv \
 	nxtrim/abyss/k%/dmelanogaster.scaftigs.bwa.samtobreak.tsv
+
+%.samtobreak.tsv: \
+		abyss/k32/%.scaftigs.bwa.samtobreak.tsv \
+		abyss/k48/%.scaftigs.bwa.samtobreak.tsv \
+		abyss/k64/%.scaftigs.bwa.samtobreak.tsv \
+		abyss/k80/%.scaftigs.bwa.samtobreak.tsv \
+		abyss/k96/%.scaftigs.bwa.samtobreak.tsv \
+		nxtrim/abyss/k32/%.scaftigs.bwa.samtobreak.tsv \
+		nxtrim/abyss/k48/%.scaftigs.bwa.samtobreak.tsv \
+		nxtrim/abyss/k64/%.scaftigs.bwa.samtobreak.tsv \
+		nxtrim/abyss/k80/%.scaftigs.bwa.samtobreak.tsv \
+		nxtrim/abyss/k96/%.scaftigs.bwa.samtobreak.tsv
+	mlr --tsvlite cat $^ >$@
+
+fastqc: \
+	dmelanogaster.pe.fastqc.html \
+	dmelanogaster.mp.fastqc.html \
+	dmelanogaster.mp.nxtrim.fastqc.html
 
 ifndef k
 abyss/k%/dmelanogaster.scaffolds.fa:
@@ -174,3 +192,9 @@ abyss/k$k/%-scaffolds.fa: %.pe.fq.gz %.mp.fq.gz
 		then cut -r -x -f ' ' \
 		then put '$$Total_breakpoints = $$Contig_breakpoints + $$Scaffold_breakpoints' \
 		>$@
+
+# RMarkdown
+
+# Generate a report of assembly metrics using RMarkdown.
+%.samtobreak.nb.html: %.samtobreak.tsv assembly-metrics.rmd
+	Rscript -e 'rmarkdown::render("assembly-metrics.rmd", "html_notebook", "$*.samtobreak.nb.html", params = list(input_tsv="$<"))'
