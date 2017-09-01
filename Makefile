@@ -158,13 +158,19 @@ abyss/k$k/%-scaffolds.fa: %.pe.fq.gz %.mp.fq.gz
 
 # Calculate assembly contiguity and correctness metrics with abyss-samtobreak.
 %.samtobreak.txt: %.sam.gz
-	(echo '==> $< <=='; gunzip -c $< | abyss-samtobreak -G$G -l1000) >$@
+	(echo "File: $<"; gunzip -c $< | abyss-samtobreak -G$G -l1000) >$@
 
-# Convert samtobreak.txt to TSV.
+# Convert samtobreak.txt to TSV using Miller.
 %.samtobreak.tsv: %.samtobreak.txt
-	( \
-		printf "File\tContig_NA50\tContig_breakpoints\tScaffold_NA50\tScaffold_breakpoints\n"; \
-		egrep '==>|Mapped NG50|Number of Q10 break points longer than 500 bp|Aligned scaffold NG50|Number of Q10 scaffold breakpoints longer than 500 bp' $< \
-			| sed 's/^==> //;s/ <==$$//;s/^.*: //' \
-			| paste -d'\t' - - - - - \
-	) | mlr --tsvlite put '$$Total_breakpoints = $$Contig_breakpoints + $$Scaffold_breakpoints' >$@
+	mlr --ixtab --ips ': ' --otsvlite --from $< \
+		then rename 'Number of unmapped contigs,Unmapped_contigs' \
+		then rename 'Total length of unmapped contigs,Unmapped_bases' \
+		then rename 'Mapped contig bases,Mapped_bases' \
+		then rename 'Mapped NG50,Contig_NGA50' \
+		then rename 'Number of Q10 break points longer than 500 bp,Contig_breakpoints' \
+		then rename 'Scaffold NG50,Scaffold_NG50' \
+		then rename 'Aligned scaffold NG50,Scaffold_NGA50' \
+		then rename 'Number of Q10 scaffold breakpoints longer than 500 bp,Scaffold_breakpoints' \
+		then cut -r -x -f ' ' \
+		then put '$$Total_breakpoints = $$Contig_breakpoints + $$Scaffold_breakpoints' \
+		>$@
