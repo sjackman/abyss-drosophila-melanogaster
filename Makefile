@@ -212,3 +212,17 @@ abyss/k$k/%-scaffolds.fa: %.pe.fq.gz %.mp.fq.gz
 # Generate a report of assembly metrics using RMarkdown.
 %.samtobreak.nb.html: %.samtobreak.tsv assembly-metrics.rmd
 	Rscript -e 'rmarkdown::render("assembly-metrics.rmd", "html_notebook", "$*.samtobreak.nb.html", params = list(input_tsv="$<"))'
+
+# makefile2graph
+
+# Create a diagram of the analysis pipeline using makefile2graph.
+Makefile.gv: Makefile
+	makefile2graph -B k=64 nxtrim-k64 -f $< | sed 's/, color="red"//' | tred >$@
+
+# Render a GraphViz graph to PDF.
+%.pdf: %.gv
+	dot -Tpdf -o $@ $<
+
+# Render a GraphViz graph to PNG.
+%.png: %.gv
+	dot -Tpng -o $@ $<
