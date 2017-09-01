@@ -5,7 +5,7 @@
 *.html
 *.log
 *.md
-*.sam
+*.sam.gz
 *.sra
 *.time
 *.tsv
