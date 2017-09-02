@@ -26,37 +26,45 @@ knit_print.data.frame <- function(x, ...) kable(x) %>% paste(collapse = "\n") %>
 input_tsv <- params$input_tsv
 ```
 
-# Read data
 ```{r read-data, message=FALSE}
 metrics <- read_tsv(input_tsv) %>%
-	mutate(Name = dirname(File))
+	mutate(Directory = dirname(File)) %>%
+	separate(Directory, c("Trimmer", "Assembler", "k"),
+		fill = "left", remove = FALSE) %>%
+	mutate(Trimmer = sub("nxtrim", "NxTrim", Trimmer)) %>%
+	replace_na(list(Trimmer = "None")) %>%
+	mutate(k = as.integer(sub("k", "", k))) %>%
+	select(Directory, Trimmer, k, everything(), -File, -Assembler)
 ```
 
 # Scaffold NG50 and NGA50 vs Breakpoints
 ```{r Scaffold-NGA50-vs-breakpoints}
 ggplot(metrics) +
-	aes(label = Name, x = Total_breakpoints) +
-	geom_errorbar(aes(ymin = Scaffold_NGA50, ymax = Scaffold_NG50), width = 50) +
-	geom_text_repel(aes(y = Scaffold_NG50), nudge_x = 500, segment.color = "#cccccc") +
+	aes(label = k, x = Total_breakpoints, colour = Trimmer, group = Trimmer) +
+	geom_errorbar(aes(ymin = Scaffold_NGA50, ymax = Scaffold_NG50), width = 10) +
+	geom_path(aes(y = Scaffold_NGA50), alpha = 0.2) +
+	geom_text_repel(aes(y = Scaffold_NG50), nudge_x = 0, segment.color = "#cccccc") +
 	scale_x_continuous(name = "Breakpoints", labels = comma) +
 	scale_y_continuous(name = "Scaffold NG50 and NGA50", labels = unit_format(unit = "kbp", scale = 1e-3)) +
-	expand_limits(x = 0, y = 0) +
+	scale_colour_brewer(palette = "Set1") +
+	expand_limits(y = 0) +
 	theme_grey(24)
 ```
 
 # Contig NGA50 vs breakpoints
 ```{r Contig-NGA50-vs-breakpoints}
 ggplot(metrics) +
-	aes(label = Name, x = Contig_breakpoints, y = Contig_NGA50) +
-	geom_point() +
-	geom_text_repel(nudge_x = -100, segment.color = "#cccccc") +
+	aes(label = k, x = Contig_breakpoints, y = Contig_NGA50, colour = Trimmer, group = Trimmer) +
+	geom_path() +
+	geom_text_repel(nudge_x = -20, segment.color = "#cccccc") +
 	scale_x_continuous(name = "Contig breakpoints", labels = comma) +
 	scale_y_continuous(name = "Contig NGA50", labels = unit_format(unit = "kbp", scale = 1e-3)) +
-	expand_limits(x = 0, y = 0) +
+	scale_colour_brewer(palette = "Set1") +
+	expand_limits(y = 0) +
 	theme_grey(24)
 ```
 
 # Table of assembly metrics
 ```{r assembly-metrics-table}
-metrics %>% select(Name, everything(), -File)
+metrics
 ```
