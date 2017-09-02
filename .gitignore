@@ -11,6 +11,7 @@
 *.tsv
 *.txt
 *.zip
+.Rproj.user
 
 # ABySS
 *-stats
