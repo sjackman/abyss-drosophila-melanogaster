@@ -25,8 +25,8 @@ export TIMEFMT=time user=%U system=%S elapsed=%E cpu=%P memory=%M job=%J
 
 # Run the entire analysis.
 all: reads nxtrim \
-	k32 k48 k64 k80 k96 \
-	nxtrim-k32 nxtrim-k48 nxtrim-k64 nxtrim-k80 nxtrim-k96 \
+	k32 k48 k64 \
+	nxtrim-k32 nxtrim-k40 nxtrim-k48 nxtrim-k56 nxtrim-k64 \
 	notebook
 
 # Download the data from the SRA.
@@ -45,7 +45,7 @@ k32 k48 k64 k80 k96: k%: \
 nxtrim: dmelanogaster.mp.nxtrim.fq.gz
 
 # Assemble the trimmed reads with ABySS, map to the referenc,e and calculate assembly metrics.
-nxtrim-k32 nxtrim-k48 nxtrim-k64 nxtrim-k80 nxtrim-k96: nxtrim-k%: \
+nxtrim-k32 nxtrim-k40 nxtrim-k48 nxtrim-k56 nxtrim-k64 nxtrim-k80 nxtrim-k96: nxtrim-k%: \
 	nxtrim/abyss/k%/dmelanogaster.scaffolds.fac.tsv \
 	nxtrim/abyss/k%/dmelanogaster.scaftigs.fac.tsv \
 	nxtrim/abyss/k%/dmelanogaster.scaftigs.bwa.samtobreak.tsv
@@ -55,13 +55,11 @@ nxtrim-k32 nxtrim-k48 nxtrim-k64 nxtrim-k80 nxtrim-k96: nxtrim-k%: \
 		abyss/k32/%.scaftigs.bwa.samtobreak.tsv \
 		abyss/k48/%.scaftigs.bwa.samtobreak.tsv \
 		abyss/k64/%.scaftigs.bwa.samtobreak.tsv \
-		abyss/k80/%.scaftigs.bwa.samtobreak.tsv \
-		abyss/k96/%.scaftigs.bwa.samtobreak.tsv \
 		nxtrim/abyss/k32/%.scaftigs.bwa.samtobreak.tsv \
+		nxtrim/abyss/k40/%.scaftigs.bwa.samtobreak.tsv \
 		nxtrim/abyss/k48/%.scaftigs.bwa.samtobreak.tsv \
-		nxtrim/abyss/k64/%.scaftigs.bwa.samtobreak.tsv \
-		nxtrim/abyss/k80/%.scaftigs.bwa.samtobreak.tsv \
-		nxtrim/abyss/k96/%.scaftigs.bwa.samtobreak.tsv
+		nxtrim/abyss/k56/%.scaftigs.bwa.samtobreak.tsv \
+		nxtrim/abyss/k64/%.scaftigs.bwa.samtobreak.tsv
 	mlr --tsvlite cat $^ >$@
 
 # Inspect the quality of the reads using FastQC.
