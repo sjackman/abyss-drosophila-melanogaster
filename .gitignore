@@ -34,3 +34,6 @@
 *.fa.sa
 
 !README.md
+!dmelanogaster.abyss-fac.tsv
+!dmelanogaster.samtobreak.nb.html
+!dmelanogaster.samtobreak.tsv
