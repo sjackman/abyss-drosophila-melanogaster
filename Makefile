@@ -27,7 +27,8 @@ export TIMEFMT=time user=%U system=%S elapsed=%E cpu=%P memory=%M job=%J
 all: reads nxtrim \
 	k32 k48 k64 \
 	nxtrim-k32 nxtrim-k40 nxtrim-k48 nxtrim-k56 nxtrim-k64 \
-	notebook
+	notebook \
+	dmelanogaster.abyss-fac.tsv
 
 # Download the data from the SRA.
 sra: SRR3663859.sra SRR3663860.sra
@@ -50,7 +51,7 @@ nxtrim-k32 nxtrim-k40 nxtrim-k48 nxtrim-k56 nxtrim-k64 nxtrim-k80 nxtrim-k96: nx
 	nxtrim/abyss/k%/dmelanogaster.scaftigs.fac.tsv \
 	nxtrim/abyss/k%/dmelanogaster.scaftigs.bwa.samtobreak.tsv
 
-# Aggregate the assembly metrics of all the assemblies.
+# Aggregate the abyss-samtobreak assembly metrics of all the assemblies.
 %.samtobreak.tsv: \
 		abyss/k32/%.scaftigs.bwa.samtobreak.tsv \
 		abyss/k48/%.scaftigs.bwa.samtobreak.tsv \
@@ -60,6 +61,27 @@ nxtrim-k32 nxtrim-k40 nxtrim-k48 nxtrim-k56 nxtrim-k64 nxtrim-k80 nxtrim-k96: nx
 		nxtrim/abyss/k48/%.scaftigs.bwa.samtobreak.tsv \
 		nxtrim/abyss/k56/%.scaftigs.bwa.samtobreak.tsv \
 		nxtrim/abyss/k64/%.scaftigs.bwa.samtobreak.tsv
+	mlr --tsvlite cat $^ >$@
+
+# Aggregate the abyss-fac assembly metrics of all the assemblies.
+%.abyss-fac.tsv: \
+		dmelanogaster.fac.tsv \
+		abyss/k32/%.scaftigs.fac.tsv \
+		abyss/k32/%.scaffolds.fac.tsv \
+		abyss/k48/%.scaftigs.fac.tsv \
+		abyss/k48/%.scaffolds.fac.tsv \
+		abyss/k64/%.scaftigs.fac.tsv \
+		abyss/k64/%.scaffolds.fac.tsv \
+		nxtrim/abyss/k32/%.scaftigs.fac.tsv \
+		nxtrim/abyss/k32/%.scaffolds.fac.tsv \
+		nxtrim/abyss/k40/%.scaftigs.fac.tsv \
+		nxtrim/abyss/k40/%.scaffolds.fac.tsv \
+		nxtrim/abyss/k48/%.scaftigs.fac.tsv \
+		nxtrim/abyss/k48/%.scaffolds.fac.tsv \
+		nxtrim/abyss/k56/%.scaftigs.fac.tsv \
+		nxtrim/abyss/k56/%.scaffolds.fac.tsv \
+		nxtrim/abyss/k64/%.scaftigs.fac.tsv \
+		nxtrim/abyss/k64/%.scaffolds.fac.tsv
 	mlr --tsvlite cat $^ >$@
 
 # Inspect the quality of the reads using FastQC.
