@@ -1,0 +1,9 @@
+File	Unmapped_contigs	Unmapped_bases	Mapped_bases	Contig_NGA50	Contig_breakpoints	Scaffold_NG50	Scaffold_NGA50	Scaffold_breakpoints	Total_breakpoints
+abyss/k32/dmelanogaster.scaftigs.bwa.sam.gz	9	21387	106608763	8676	372	297178	243897	60	432
+abyss/k48/dmelanogaster.scaftigs.bwa.sam.gz	5	9462	109220123	10652	410	460732	333695	123	533
+abyss/k64/dmelanogaster.scaftigs.bwa.sam.gz	5	9942	110041604	6963	379	306898	252294	101	480
+nxtrim/abyss/k32/dmelanogaster.scaftigs.bwa.sam.gz	9	21387	106577680	8682	369	330187	317624	8	377
+nxtrim/abyss/k40/dmelanogaster.scaftigs.bwa.sam.gz	6	13620	108223869	10719	389	416888	386982	16	405
+nxtrim/abyss/k48/dmelanogaster.scaftigs.bwa.sam.gz	5	9462	109166178	10652	397	499193	499193	19	416
+nxtrim/abyss/k56/dmelanogaster.scaftigs.bwa.sam.gz	6	10660	109835794	8840	394	516648	487787	13	407
+nxtrim/abyss/k64/dmelanogaster.scaftigs.bwa.sam.gz	5	9942	110030937	6965	370	350281	350281	18	388
