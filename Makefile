@@ -241,7 +241,7 @@ abyss/k$k/%-scaffolds.fa: %.pe.fq.gz %.mp.fq.gz
 
 # Create a diagram of the analysis pipeline using makefile2graph.
 Makefile.gv: Makefile
-	makefile2graph -B k=64 nxtrim-k64 -f $< | sed 's/, color="red"//' | tred >$@
+	makefile2graph -B k=48 nxtrim-k48 -f $< | sed 's/, color="red"//' | tred >$@
 
 # Render a GraphViz graph to PDF.
 %.pdf: %.gv
