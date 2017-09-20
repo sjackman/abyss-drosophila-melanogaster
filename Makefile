@@ -105,12 +105,12 @@ nxtrim/abyss/k%/dmelanogaster.scaffolds.fa:
 	$(time) $(MAKE) k=$* $@ 2>&1 | tee $@.log
 endif
 
-# Download data from Ensembl.
+# Download the reference genome.
 dmelanogaster.fa:
 	curl ftp://ftp.ensembl.org/pub/release-90/fasta/drosophila_melanogaster/dna/Drosophila_melanogaster.BDGP6.dna_sm.toplevel.fa.gz \
 		| gunzip -c | seqtk seq >$@
 
-# Download the reference genome.
+# Download the data from SRA.
 SRR366%.sra:
 	curl -o $@ ftp://ftp-trace.ncbi.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR366/SRR366$*/$@
 
