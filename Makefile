@@ -91,7 +91,9 @@ fastqc: \
 	dmelanogaster.mp.nxtrim.fastqc.html
 
 # Generate a report of assembly metrics.
-notebook: dmelanogaster.samtobreak.nb.html
+notebook: \
+	dmelanogaster.pe.ntcard.nb.html \
+	dmelanogaster.samtobreak.nb.html
 
 ifndef k
 # Assemble the reads with ABySS.
@@ -155,6 +157,21 @@ nxtrim/%.pe.fq.gz: %.pe.fq.gz
 nxtrim/%.mp.fq.gz: %.mp.nxtrim.fq.gz
 	mkdir -p $(@D)
 	ln -sf ../$< $@
+
+# ntCard
+
+# Count k-mers using ntCard.
+%.ntcard_k24.hist: %.fq.gz
+	ntcard -t$t -c 256 -k 24,32,40,48,56,64,72,80,88,96 -p $*.ntcard $^
+
+# Aggregate ntCard k-mer counts.
+%.ntcard.tsv: %.ntcard_k24.hist
+	mlr -p --ifs tab --otsvlite \
+		then filter '$$1 =~ "^f"' \
+		then put 'FILENAME =~ "k([0-9]*)"; $$k = "\1"; $$c = sub($$1, "f", ""); $$n = $$2' \
+		then cut -o -f k,c,n \
+		then sort -n k,c \
+		$*.ntcard_k*.hist >$@
 
 # samtools
 
@@ -232,6 +249,10 @@ abyss/k$k/%-scaffolds.fa: %.pe.fq.gz %.mp.fq.gz
 		>$@
 
 # RMarkdown
+
+# Generate a report of the k-mer coverage profile using RMarkdown.
+%.ntcard.nb.html: %.ntcard.tsv ntcard.rmd
+	Rscript -e 'rmarkdown::render("ntcard.rmd", "html_notebook", "$*.ntcard.nb.html", params = list(input_tsv="$<"))'
 
 # Generate a report of assembly metrics using RMarkdown.
 %.samtobreak.nb.html: %.samtobreak.tsv assembly-metrics.rmd
