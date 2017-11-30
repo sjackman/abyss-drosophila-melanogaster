@@ -1,0 +1,104 @@
+---
+title: Analyze a k-mer coverage profile
+author: Shaun Jackman
+output:
+  html_notebook:
+    code_folding: hide
+  html_document:
+    keep_md: true
+params:
+  input_tsv:
+    label: "Input TSV file of the k-mer coverage profile"
+    value: "dmelanogaster.pe.ntcard.tsv"
+    input: text
+---
+
+```{r setup, message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(ggrepel)
+library(magrittr)
+library(readr)
+library(scales)
+
+input_tsv <- params$input_tsv
+```
+
+```{r read-data}
+kmers <- read_tsv(input_tsv,
+	col_types = cols(
+		k = col_integer(),
+		c = col_integer(),
+		n = col_double()))
+```
+
+```{r analyse-data}
+maxima <- kmers %>%
+	filter(c >= 10) %>%
+	group_by(k) %>%
+	filter(n == max(n)) %>%
+	ungroup() %>%
+	filter(c != 10) %>%
+	mutate(label = paste0("k=", k, " c=", c))
+
+minima <- kmers %>%
+	filter(c <= 10) %>%
+	group_by(k) %>%
+	filter(n == min(n)) %>%
+	ungroup() %>%
+	filter(c != 10) %>%
+	mutate(label = paste0("k=", k, " c=", c))
+
+extrema <- rbind(
+	mutate(maxima, Extremum = "Maximum"),
+	mutate(minima, Extremum = "Minimum"))
+```
+
+# Envelope of the k-mer coverage profiles
+```{r envelope}
+ggplot(extrema) +
+	aes(x = c, y = n, group = k, colour = k) +
+	geom_point() +
+	geom_path(aes(group = Extremum), alpha = 0.5) +
+	geom_label_repel(aes(label = label),
+		segment.alpha = 0.5) +
+	scale_y_continuous(label = unit_format(unit = "M", scale = 1e-6)) +
+	coord_cartesian(x = c(0, max(maxima$c)), y = c(0, max(maxima$n)))
+```
+
+# *k*-mer coverage profile
+```{r profile}
+ggplot() +
+	aes(x = c, y = n, group = k, colour = k) +
+	geom_line(data = kmers) +
+	geom_point(data = extrema) +
+	geom_label_repel(data = extrema,
+		aes(label = label),
+		segment.alpha = 0.5) +
+	scale_y_continuous(label = unit_format(unit = "M", scale = 1e-6)) +
+	coord_cartesian(x = c(0, max(maxima$c)), y = c(0, max(maxima$n)))
+```
+
+# Estimate genome size
+```{r estimate-genome-size}
+F <- extrema %>%
+	filter(Extremum == "Minimum") %>%
+	transmute(k0 = k, c0 = c, label) %>%
+	rowwise() %>%
+	mutate(
+		G = kmers %>% filter(k == k0, c >= c0) %$% sum(n),
+		F0 = kmers %>% filter(k == k0) %$% sum(n)) %>%
+	rename(k = k0, c = c0)
+
+F %>% select(-label) %>% mutate(G = comma(G), F0 = comma(F0))
+```
+
+# Plot estimated genome size
+```{r plot-genome-size}
+ggplot(F) +
+	aes(x = c, y = G, label = label) +
+	geom_point() +
+	geom_label_repel() +
+	scale_y_continuous(name = "Estimated genome size",
+		label = unit_format(unit = "Gbp", scale = 1e-9))
+```
